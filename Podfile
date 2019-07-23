@@ -1,4 +1,5 @@
 use_frameworks!
+supports_swift_versions '>= 4.0', '<= 4.2'
 
 target 'OAuthSwiftTests' do
     platform :osx, '10.11'
