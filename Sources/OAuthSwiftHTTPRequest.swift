@@ -48,11 +48,11 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
 
     // MARK: INIT
 
-    convenience init(url: URL, method: Method = .GET, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, httpBody: Data? = nil, headers: OAuthSwift.Headers = [:], sessionFactory: URLSessionFactory = .default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+    convenience init(url: URL, method: Method = .GET, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, httpBody: Data? = nil, headers: OAuthSwift.Headers = [:], sessionFactory: SessionFactory = URLSessionFactory.default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
         self.init(config: Config(url: url, httpMethod: method, httpBody: httpBody, headers: headers, parameters: parameters, paramsLocation: paramsLocation, sessionFactory: sessionFactory), networkActivityNotifier: networkActivityNotifier)
     }
 
-    convenience init(request: NetworkRequest, paramsLocation: ParamsLocation = .authorizationHeader, sessionFactory: URLSessionFactory = .default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+    convenience init(request: NetworkRequest, paramsLocation: ParamsLocation = .authorizationHeader, sessionFactory: SessionFactory = URLSessionFactory.default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
         self.init(config: Config(urlRequest: request, paramsLocation: paramsLocation, sessionFactory: sessionFactory), networkActivityNotifier: networkActivityNotifier)
     }
 
@@ -325,7 +325,7 @@ extension OAuthSwiftHTTPRequest {
         public var parameters: OAuthSwift.Parameters
         public let paramsLocation: ParamsLocation
         public let dataEncoding: String.Encoding
-        public let sessionFactory: URLSessionFactory
+        public let sessionFactory: SessionFactory
 
         /// Shortcut
         public var httpMethod: Method {
@@ -340,7 +340,7 @@ extension OAuthSwiftHTTPRequest {
         }
 
         // MARK: init
-        public init(url: URL, httpMethod: Method = .GET, httpBody: Data? = nil, headers: OAuthSwift.Headers = [:], timeoutInterval: TimeInterval = 60, httpShouldHandleCookies: Bool = false, parameters: OAuthSwift.Parameters, paramsLocation: ParamsLocation = .authorizationHeader, dataEncoding: String.Encoding = OAuthSwiftDataEncoding, sessionFactory: URLSessionFactory = .default) {
+        public init(url: URL, httpMethod: Method = .GET, httpBody: Data? = nil, headers: OAuthSwift.Headers = [:], timeoutInterval: TimeInterval = 60, httpShouldHandleCookies: Bool = false, parameters: OAuthSwift.Parameters, paramsLocation: ParamsLocation = .authorizationHeader, dataEncoding: String.Encoding = OAuthSwiftDataEncoding, sessionFactory: SessionFactory) {
             var urlRequest = URLRequest(url: url)
             urlRequest.httpMethod = httpMethod.rawValue
             urlRequest.httpBody = httpBody
@@ -350,7 +350,7 @@ extension OAuthSwiftHTTPRequest {
             self.init(urlRequest: urlRequest, parameters: parameters, paramsLocation: paramsLocation, dataEncoding: dataEncoding, sessionFactory: sessionFactory)
         }
 
-        public init(urlRequest: NetworkRequest, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, dataEncoding: String.Encoding = OAuthSwiftDataEncoding, sessionFactory: URLSessionFactory = .default) {
+        public init(urlRequest: NetworkRequest, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, dataEncoding: String.Encoding = OAuthSwiftDataEncoding, sessionFactory: SessionFactory) {
             self.urlRequest = urlRequest
             self.parameters = parameters
             self.paramsLocation = paramsLocation
@@ -431,8 +431,18 @@ extension OAuthSwiftHTTPRequest {
 
 // MARK: - session configuration
 
+public protocol SessionFactory {
+    var useDataTaskClosure: Bool { get }
+}
+
+extension SessionFactory {
+    func build() -> NetworkRequestHandler {
+        return URLSession.shared
+    }
+}
+
 /// configure how URLSession is initialized
-public struct URLSessionFactory {
+public struct URLSessionFactory: SessionFactory {
 
     public static let `default` = URLSessionFactory()
 
