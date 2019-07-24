@@ -11,7 +11,7 @@ import XCTest
 
 class OAuthSwiftClientTests: XCTestCase {
 
-    let client = OAuthSwiftClient(consumerKey: "", consumerSecret: "")
+    let client = OAuthSwiftClient(consumerKey: "", consumerSecret: "", networkActivityNotifier: nil)
     let url = "http://www.example.com"
     let emptyParameters = OAuthSwift.Parameters()
 

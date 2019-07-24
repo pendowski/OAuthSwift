@@ -34,37 +34,37 @@ open class OAuth2Swift: OAuthSwift {
     var codeVerifier: String?
 
     // MARK: init
-    public convenience init(consumerKey: String, consumerSecret: String, authorizeUrl: URLConvertible, accessTokenUrl: URLConvertible, responseType: String) {
-        self.init(consumerKey: consumerKey, consumerSecret: consumerSecret, authorizeUrl: authorizeUrl, responseType: responseType)
+    public convenience init(consumerKey: String, consumerSecret: String, authorizeUrl: URLConvertible, accessTokenUrl: URLConvertible, responseType: String, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType? = OAuthSwiftDefaultNetworkActivityNotifier()) {
+        self.init(consumerKey: consumerKey, consumerSecret: consumerSecret, authorizeUrl: authorizeUrl, responseType: responseType, networkActivityNotifier: networkActivityNotifier)
         self.accessTokenUrl = accessTokenUrl.string
     }
 
-    public convenience init(consumerKey: String, consumerSecret: String, authorizeUrl: URLConvertible, accessTokenUrl: URLConvertible, responseType: String, contentType: String) {
-        self.init(consumerKey: consumerKey, consumerSecret: consumerSecret, authorizeUrl: authorizeUrl, responseType: responseType)
+    public convenience init(consumerKey: String, consumerSecret: String, authorizeUrl: URLConvertible, accessTokenUrl: URLConvertible, responseType: String, contentType: String, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType? = OAuthSwiftDefaultNetworkActivityNotifier()) {
+        self.init(consumerKey: consumerKey, consumerSecret: consumerSecret, authorizeUrl: authorizeUrl, responseType: responseType, networkActivityNotifier: networkActivityNotifier)
         self.accessTokenUrl = accessTokenUrl.string
         self.contentType = contentType
     }
 
-    public init(consumerKey: String, consumerSecret: String, authorizeUrl: URLConvertible, responseType: String) {
+    public init(consumerKey: String, consumerSecret: String, authorizeUrl: URLConvertible, responseType: String, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType? = OAuthSwiftDefaultNetworkActivityNotifier()) {
         self.consumerKey = consumerKey
         self.consumerSecret = consumerSecret
         self.authorizeUrl = authorizeUrl.string
         self.responseType = responseType
-        super.init(consumerKey: consumerKey, consumerSecret: consumerSecret)
+        super.init(consumerKey: consumerKey, consumerSecret: consumerSecret, networkActivityNotifier: networkActivityNotifier)
         self.client.credential.version = .oauth2
     }
 
-    public convenience init?(parameters: ConfigParameters) {
+    public convenience init?(parameters: ConfigParameters, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType? = OAuthSwiftDefaultNetworkActivityNotifier()) {
         guard let consumerKey = parameters["consumerKey"], let consumerSecret = parameters["consumerSecret"],
               let responseType = parameters["responseType"], let authorizeUrl = parameters["authorizeUrl"] else {
             return nil
         }
         if let accessTokenUrl = parameters["accessTokenUrl"] {
             self.init(consumerKey: consumerKey, consumerSecret: consumerSecret,
-                authorizeUrl: authorizeUrl, accessTokenUrl: accessTokenUrl, responseType: responseType)
+                      authorizeUrl: authorizeUrl, accessTokenUrl: accessTokenUrl, responseType: responseType, networkActivityNotifier: networkActivityNotifier)
         } else {
             self.init(consumerKey: consumerKey, consumerSecret: consumerSecret,
-                authorizeUrl: authorizeUrl, responseType: responseType)
+                      authorizeUrl: authorizeUrl, responseType: responseType, networkActivityNotifier: networkActivityNotifier)
         }
     }
 

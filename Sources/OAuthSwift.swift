@@ -23,8 +23,8 @@ open class OAuthSwift: NSObject, OAuthSwiftRequestHandle {
     fileprivate var currentRequests: [String: OAuthSwiftRequestHandle] = [:]
 
     // MARK: init
-    init(consumerKey: String, consumerSecret: String) {
-        self.client = OAuthSwiftClient(consumerKey: consumerKey, consumerSecret: consumerSecret)
+    init(consumerKey: String, consumerSecret: String, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+        self.client = OAuthSwiftClient(consumerKey: consumerKey, consumerSecret: consumerSecret, networkActivityNotifier: networkActivityNotifier)
     }
 
     // MARK: callback notification

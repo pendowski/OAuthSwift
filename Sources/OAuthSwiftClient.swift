@@ -25,20 +25,23 @@ open class OAuthSwiftClient: NSObject {
     static var separatorData: Data = {
         return OAuthSwiftClient.separator.data(using: OAuthSwiftDataEncoding)!
     }()
+    
+    let networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?
 
     // MARK: init
-    public init(credential: OAuthSwiftCredential) {
+    public init(credential: OAuthSwiftCredential, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
         self.credential = credential
+        self.networkActivityNotifier = networkActivityNotifier
     }
 
-    public convenience init(consumerKey: String, consumerSecret: String, version: OAuthSwiftCredential.Version = .oauth1) {
+    public convenience init(consumerKey: String, consumerSecret: String, version: OAuthSwiftCredential.Version = .oauth1, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
         let credential = OAuthSwiftCredential(consumerKey: consumerKey, consumerSecret: consumerSecret)
         credential.version = version
-        self.init(credential: credential)
+        self.init(credential: credential, networkActivityNotifier: networkActivityNotifier)
     }
 
-    public convenience init(consumerKey: String, consumerSecret: String, oauthToken: String, oauthTokenSecret: String, version: OAuthSwiftCredential.Version) {
-        self.init(consumerKey: consumerKey, consumerSecret: consumerSecret, version: version)
+    public convenience init(consumerKey: String, consumerSecret: String, oauthToken: String, oauthTokenSecret: String, version: OAuthSwiftCredential.Version, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+        self.init(consumerKey: consumerKey, consumerSecret: consumerSecret, version: version, networkActivityNotifier: networkActivityNotifier)
         self.credential.oauthToken = oauthToken
         self.credential.oauthTokenSecret = oauthTokenSecret
     }
@@ -90,7 +93,7 @@ open class OAuthSwiftClient: NSObject {
     }
 
     open func makeRequest(_ request: URLRequest) -> OAuthSwiftHTTPRequest {
-        let request = OAuthSwiftHTTPRequest(request: request, paramsLocation: self.paramsLocation, sessionFactory: self.sessionFactory)
+        let request = OAuthSwiftHTTPRequest(request: request, paramsLocation: self.paramsLocation, sessionFactory: self.sessionFactory, networkActivityNotifier: self.networkActivityNotifier)
         request.config.updateRequest(credential: self.credential)
         return request
     }
@@ -100,7 +103,7 @@ open class OAuthSwiftClient: NSObject {
             return nil // XXX failure not thrown here
         }
 
-        let request = OAuthSwiftHTTPRequest(url: url, method: method, parameters: parameters, paramsLocation: self.paramsLocation, httpBody: body, headers: headers ?? [:], sessionFactory: self.sessionFactory)
+        let request = OAuthSwiftHTTPRequest(url: url, method: method, parameters: parameters, paramsLocation: self.paramsLocation, httpBody: body, headers: headers ?? [:], sessionFactory: self.sessionFactory, networkActivityNotifier: self.networkActivityNotifier)
         request.config.updateRequest(credential: self.credential)
         return request
     }

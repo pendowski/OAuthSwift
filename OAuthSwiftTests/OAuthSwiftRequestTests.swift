@@ -21,7 +21,7 @@ class OAuth1SwiftRequestTests: XCTestCase {
     }
 
     func testFailure() {
-        let oAuthSwiftHTTPRequest = OAuthSwiftHTTPRequest(url: URL(string: "http://127.0.0.1:\(8765)")!)
+        let oAuthSwiftHTTPRequest = OAuthSwiftHTTPRequest(url: URL(string: "http://127.0.0.1:\(8765)")!, networkActivityNotifier: nil)
         
         let failureExpectation = expectation(description: "Expected `failure` to be called")
         let failureHandler: OAuthSwiftHTTPRequest.FailureHandler = { _ in
@@ -50,7 +50,7 @@ class OAuth1SwiftRequestTests: XCTestCase {
             server.stop()
         }
         
-        let oAuthSwiftHTTPRequest = OAuthSwiftHTTPRequest(url: URL(string: "http://127.0.0.1:\(port)")!)
+        let oAuthSwiftHTTPRequest = OAuthSwiftHTTPRequest(url: URL(string: "http://127.0.0.1:\(port)")!, networkActivityNotifier: nil)
         let successExpectation = expectation(description: "Expected `failure` to be called")
         
         let failureHandler: OAuthSwiftHTTPRequest.FailureHandler  = { error in
@@ -85,7 +85,7 @@ class OAuth1SwiftRequestTests: XCTestCase {
 			server.stop()
 		}
 
-		let oAuthSwiftHTTPRequest = OAuthSwiftHTTPRequest(url: URL(string: "http://127.0.0.1:\(port)")!)
+		let oAuthSwiftHTTPRequest = OAuthSwiftHTTPRequest(url: URL(string: "http://127.0.0.1:\(port)")!, networkActivityNotifier: nil)
 
 		let failureExpectation = expectation(description: "Expected `failure` to be called because of canceling the request")
         
@@ -126,7 +126,7 @@ class OAuth1SwiftRequestTests: XCTestCase {
 		request.timeoutInterval = timeout
 		request.httpShouldHandleCookies = true
 
-		let oauthRequest = OAuthSwiftHTTPRequest(request: request)
+		let oauthRequest = OAuthSwiftHTTPRequest(request: request, networkActivityNotifier: nil)
 
 		XCTAssertEqualURL(oauthRequest.config.urlRequest.url!, urlWithQueryString)
 		XCTAssertEqualDictionaries(oauthRequest.config.parameters as! [String:String], [:])

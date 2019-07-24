@@ -35,6 +35,10 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
     private var request: URLRequest?
     private var task: URLSessionTask?
     private var session: URLSession!
+    private var usesNetworkActivity: Bool {
+        return config.sessionFactory.useDataTaskClosure
+    }
+    private var networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?
 
     fileprivate var cancelRequested = false
 
@@ -44,16 +48,17 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
 
     // MARK: INIT
 
-    convenience init(url: URL, method: Method = .GET, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, httpBody: Data? = nil, headers: OAuthSwift.Headers = [:], sessionFactory: URLSessionFactory = .default) {
-        self.init(config: Config(url: url, httpMethod: method, httpBody: httpBody, headers: headers, parameters: parameters, paramsLocation: paramsLocation, sessionFactory: sessionFactory))
+    convenience init(url: URL, method: Method = .GET, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, httpBody: Data? = nil, headers: OAuthSwift.Headers = [:], sessionFactory: URLSessionFactory = .default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+        self.init(config: Config(url: url, httpMethod: method, httpBody: httpBody, headers: headers, parameters: parameters, paramsLocation: paramsLocation, sessionFactory: sessionFactory), networkActivityNotifier: networkActivityNotifier)
     }
 
-    convenience init(request: URLRequest, paramsLocation: ParamsLocation = .authorizationHeader, sessionFactory: URLSessionFactory = .default) {
-        self.init(config: Config(urlRequest: request, paramsLocation: paramsLocation, sessionFactory: sessionFactory))
+    convenience init(request: URLRequest, paramsLocation: ParamsLocation = .authorizationHeader, sessionFactory: URLSessionFactory = .default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+        self.init(config: Config(urlRequest: request, paramsLocation: paramsLocation, sessionFactory: sessionFactory), networkActivityNotifier: networkActivityNotifier)
     }
 
-    init(config: Config) {
+    init(config: Config, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
         self.config = config
+        self.networkActivityNotifier = networkActivityNotifier
     }
 
     /// START request
@@ -70,6 +75,8 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
             self.request = nil
             return
         }
+        
+        let networkActivityNotifier = usesNetworkActivity ? self.networkActivityNotifier : nil
 
         OAuthSwiftHTTPRequest.executionContext {
             // perform lock here to prevent cancel calls on another thread while creating the request
@@ -84,7 +91,8 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
 
             if self.config.sessionFactory.useDataTaskClosure {
                 let completionHandler: (Data?, URLResponse?, Error?) -> Void = { data, resp, error in
-                    OAuthSwiftHTTPRequest.completionHandler(successHandler: success,
+                    OAuthSwiftHTTPRequest.completionHandler(networkActivityNotifier: networkActivityNotifier,
+                                                            successHandler: success,
                                                             failureHandler: failure,
                                                             request: usedRequest,
                                                             data: data,
@@ -92,27 +100,31 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
                                                             error: error)
                 }
                 self.task = self.session.dataTask(with: usedRequest, completionHandler: completionHandler)
+                
             } else {
                 self.task = self.session.dataTask(with: usedRequest)
             }
 
             self.task?.resume()
             self.session.finishTasksAndInvalidate()
-
-            #if os(iOS)
-                #if !OAUTH_APP_EXTENSIONS
-                    UIApplication.shared.isNetworkActivityIndicatorVisible = self.config.sessionFactory.isNetworkActivityIndicatorVisible
-                #endif
+            
+            
+            #if !OAUTH_APP_EXTENSIONS
+                networkActivityNotifier?.networkActivityStarted()
             #endif
         }
     }
 
     /// Function called when receiving data from server.
-    public static func completionHandler(successHandler: SuccessHandler?, failureHandler: FailureHandler?, request: URLRequest, data: Data?, resp: URLResponse?, error: Error?) {
-        #if os(iOS)
+    public static func completionHandler(networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, successHandler: SuccessHandler?, failureHandler: FailureHandler?, request: URLRequest, data: Data?, resp: URLResponse?, error: Error?) {
         #if !OAUTH_APP_EXTENSIONS
-        UIApplication.shared.isNetworkActivityIndicatorVisible = false
-        #endif
+            OAuthSwiftHTTPRequest.executionContext {
+                do {
+                    try networkActivityNotifier?.networkActivityEnded()
+                } catch {
+                    assertionFailure(error.localizedDescription)
+                }
+            }
         #endif
 
         // MARK: failure error returned by server
@@ -427,9 +439,6 @@ public struct URLSessionFactory {
     public var queue = OperationQueue.main
     /// An optional delegate for the URLSession
     public weak var delegate: URLSessionDelegate?
-
-    /// Monitor session: see UIApplication.shared.isNetworkActivityIndicatorVisible
-    public var isNetworkActivityIndicatorVisible = true
 
     /// By default use a closure to receive data from server.
     /// If you set to false, you must in `delegate` take care of server response.

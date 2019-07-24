@@ -27,21 +27,21 @@ open class OAuth1Swift: OAuthSwift {
     var accessTokenUrl: String
 
     // MARK: init
-    public init(consumerKey: String, consumerSecret: String, requestTokenUrl: URLConvertible, authorizeUrl: URLConvertible, accessTokenUrl: URLConvertible) {
+    public init(consumerKey: String, consumerSecret: String, requestTokenUrl: URLConvertible, authorizeUrl: URLConvertible, accessTokenUrl: URLConvertible, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType? = OAuthSwiftDefaultNetworkActivityNotifier()) {
         self.consumerKey = consumerKey
         self.consumerSecret = consumerSecret
         self.requestTokenUrl = requestTokenUrl.string
         self.authorizeUrl = authorizeUrl.string
         self.accessTokenUrl = accessTokenUrl.string
-        super.init(consumerKey: consumerKey, consumerSecret: consumerSecret)
+        super.init(consumerKey: consumerKey, consumerSecret: consumerSecret, networkActivityNotifier: networkActivityNotifier)
         self.client.credential.version = .oauth1
     }
 
-    public convenience override init(consumerKey: String, consumerSecret: String) {
-        self.init(consumerKey: consumerKey, consumerSecret: consumerSecret, requestTokenUrl: "", authorizeUrl: "", accessTokenUrl: "")
+    public convenience override init(consumerKey: String, consumerSecret: String, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType? = OAuthSwiftDefaultNetworkActivityNotifier()) {
+        self.init(consumerKey: consumerKey, consumerSecret: consumerSecret, requestTokenUrl: "", authorizeUrl: "", accessTokenUrl: "", networkActivityNotifier: networkActivityNotifier)
     }
 
-    public convenience init?(parameters: ConfigParameters) {
+    public convenience init?(parameters: ConfigParameters, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType? = OAuthSwiftDefaultNetworkActivityNotifier()) {
         guard let consumerKey = parameters["consumerKey"], let consumerSecret = parameters["consumerSecret"],
             let requestTokenUrl = parameters["requestTokenUrl"], let authorizeUrl = parameters["authorizeUrl"], let accessTokenUrl = parameters["accessTokenUrl"] else {
             return nil
@@ -49,7 +49,8 @@ open class OAuth1Swift: OAuthSwift {
         self.init(consumerKey: consumerKey, consumerSecret: consumerSecret,
           requestTokenUrl: requestTokenUrl,
           authorizeUrl: authorizeUrl,
-          accessTokenUrl: accessTokenUrl)
+          accessTokenUrl: accessTokenUrl,
+          networkActivityNotifier: networkActivityNotifier)
     }
 
     open var parameters: ConfigParameters {
