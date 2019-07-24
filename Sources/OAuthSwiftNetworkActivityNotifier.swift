@@ -16,6 +16,14 @@ public protocol OAuthSwiftNetworkActivityNotifierType {
 }
 
 public class OAuthSwiftDefaultNetworkActivityNotifier: OAuthSwiftNetworkActivityNotifierType {
+    private var updateHandler: (Bool) -> Void
+    
+    public static let defaultUpdateHandler: (Bool) -> Void = { visible in
+        #if os(iOS)
+            UIApplication.shared.isNetworkActivityIndicatorVisible = visible
+        #endif
+    }
+    
     public enum Error: Swift.Error {
         case unbalancedActivityCall
     }
@@ -23,14 +31,14 @@ public class OAuthSwiftDefaultNetworkActivityNotifier: OAuthSwiftNetworkActivity
     public var activeNetworkActivities: Int = 0 {
         didSet {
             if activeNetworkActivities != oldValue {
-                #if os(iOS)
-                    UIApplication.shared.isNetworkActivityIndicatorVisible = activeNetworkActivities > 0
-                #endif
+                updateHandler(activeNetworkActivities > 0)
             }
         }
     }
     
-    public init() {}
+    public init(_ updateHandler: @escaping (Bool) -> Void = OAuthSwiftDefaultNetworkActivityNotifier.defaultUpdateHandler) {
+        self.updateHandler = updateHandler
+    }
     
     public func networkActivityStarted() {
         activeNetworkActivities += 1

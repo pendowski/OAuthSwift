@@ -433,12 +433,8 @@ extension OAuthSwiftHTTPRequest {
 
 public protocol SessionFactory {
     var useDataTaskClosure: Bool { get }
-}
-
-extension SessionFactory {
-    func build() -> NetworkRequestHandler {
-        return URLSession.shared
-    }
+    
+    func build() -> NetworkRequestHandler
 }
 
 /// configure how URLSession is initialized
@@ -457,7 +453,7 @@ public struct URLSessionFactory: SessionFactory {
     public var useDataTaskClosure = true
 
     /// Create a new URLSession
-    func build() -> NetworkRequestHandler {
+    public func build() -> NetworkRequestHandler {
         return URLSession(configuration: self.configuration, delegate: self.delegate, delegateQueue: self.queue)
     }
 }

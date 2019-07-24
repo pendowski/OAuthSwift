@@ -29,6 +29,7 @@
 		AAEC707A22E8B0EB0038800B /* URLSession+NetworkRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEC707822E8B0EB0038800B /* URLSession+NetworkRequestHandler.swift */; };
 		AAEC707B22E8B0EB0038800B /* URLSession+NetworkRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEC707822E8B0EB0038800B /* URLSession+NetworkRequestHandler.swift */; };
 		AAEC707C22E8B0EB0038800B /* URLSession+NetworkRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEC707822E8B0EB0038800B /* URLSession+NetworkRequestHandler.swift */; };
+		AAEC707E22E8B8320038800B /* OAuthSwiftNetworkActivityNotifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEC707D22E8B8320038800B /* OAuthSwiftNetworkActivityNotifierTests.swift */; };
 		B95BA395473AEEC62457C930 /* Pods_OAuthSwiftTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0ED45F76F07F16FB6FF639B7 /* Pods_OAuthSwiftTests.framework */; };
 		C40890C31C11B37000E3146A /* OAuthSwiftWatchOS.h in Headers */ = {isa = PBXBuildFile; fileRef = C40890C21C11B37000E3146A /* OAuthSwiftWatchOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C40890C81C11B38000E3146A /* OAuth1Swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43502681A6790EC00038A29 /* OAuth1Swift.swift */; };
@@ -224,6 +225,7 @@
 		AA7405D322E72AEC007E4B80 /* OAuthSwiftNetworkActivityNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthSwiftNetworkActivityNotifier.swift; sourceTree = "<group>"; };
 		AAEC707322E8AA5C0038800B /* NetworkRequestHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkRequestHandler.swift; sourceTree = "<group>"; };
 		AAEC707822E8B0EB0038800B /* URLSession+NetworkRequestHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLSession+NetworkRequestHandler.swift"; sourceTree = "<group>"; };
+		AAEC707D22E8B8320038800B /* OAuthSwiftNetworkActivityNotifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuthSwiftNetworkActivityNotifierTests.swift; sourceTree = "<group>"; };
 		C40890C01C11B37000E3146A /* OAuthSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = OAuthSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C40890C21C11B37000E3146A /* OAuthSwiftWatchOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OAuthSwiftWatchOS.h; sourceTree = "<group>"; };
 		C40890C41C11B37000E3146A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -498,6 +500,7 @@
 				0738BC6A1EBA755C000FA2F2 /* OAuthSwiftCredentialTests.swift */,
 				C4D50DF91BFB693F0053B624 /* OAuth1SwiftTests.swift */,
 				C4D50E0C1BFB79D00053B624 /* OAuth2SwiftTests.swift */,
+				AAEC707D22E8B8320038800B /* OAuthSwiftNetworkActivityNotifierTests.swift */,
 				C4FAE4351C061660000CE669 /* SignTests.swift */,
 				C40C96D81DA639B700197628 /* UtilsTests.swift */,
 				C44244DA1C06316100880DAB /* ServicesTests.swift */,
@@ -1092,6 +1095,7 @@
 				C4D50E031BFB6A340053B624 /* TestServer.swift in Sources */,
 				C44244DB1C06316100880DAB /* ServicesTests.swift in Sources */,
 				48942B5B2085DB5F00376BFA /* URLTests.swift in Sources */,
+				AAEC707E22E8B8320038800B /* OAuthSwiftNetworkActivityNotifierTests.swift in Sources */,
 				C4D50E0D1BFB79D00053B624 /* OAuth2SwiftTests.swift in Sources */,
 				C40C96D91DA639B700197628 /* UtilsTests.swift in Sources */,
 				C4FAE4361C061660000CE669 /* SignTests.swift in Sources */,
