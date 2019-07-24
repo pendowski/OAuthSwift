@@ -32,9 +32,9 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
 
     public var config: Config
 
-    private var request: URLRequest?
-    private var task: URLSessionTask?
-    private var session: URLSession!
+    private var request: NetworkRequest?
+    private var operation: NetworkRequestOperation?
+    private var session: NetworkRequestHandler!
     private var usesNetworkActivity: Bool {
         return config.sessionFactory.useDataTaskClosure
     }
@@ -52,7 +52,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         self.init(config: Config(url: url, httpMethod: method, httpBody: httpBody, headers: headers, parameters: parameters, paramsLocation: paramsLocation, sessionFactory: sessionFactory), networkActivityNotifier: networkActivityNotifier)
     }
 
-    convenience init(request: URLRequest, paramsLocation: ParamsLocation = .authorizationHeader, sessionFactory: URLSessionFactory = .default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+    convenience init(request: NetworkRequest, paramsLocation: ParamsLocation = .authorizationHeader, sessionFactory: URLSessionFactory = .default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
         self.init(config: Config(urlRequest: request, paramsLocation: paramsLocation, sessionFactory: sessionFactory), networkActivityNotifier: networkActivityNotifier)
     }
 
@@ -90,7 +90,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
             let usedRequest = self.request!
 
             if self.config.sessionFactory.useDataTaskClosure {
-                let completionHandler: (Data?, URLResponse?, Error?) -> Void = { data, resp, error in
+                let completionHandler: (Data?, NetworkRequestResponse?, Error?) -> Void = { data, resp, error in
                     OAuthSwiftHTTPRequest.completionHandler(networkActivityNotifier: networkActivityNotifier,
                                                             successHandler: success,
                                                             failureHandler: failure,
@@ -99,14 +99,14 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
                                                             resp: resp,
                                                             error: error)
                 }
-                self.task = self.session.dataTask(with: usedRequest, completionHandler: completionHandler)
+                self.operation = self.session.dataOperation(with: usedRequest, completionHandler: completionHandler)
                 
             } else {
-                self.task = self.session.dataTask(with: usedRequest)
+                self.operation = self.session.dataOperation(with: usedRequest)
             }
 
-            self.task?.resume()
-            self.session.finishTasksAndInvalidate()
+            self.operation?.resume()
+            self.session.finishOperationsAndInvalidate()
             
             
             #if !OAUTH_APP_EXTENSIONS
@@ -116,7 +116,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
     }
 
     /// Function called when receiving data from server.
-    public static func completionHandler(networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, successHandler: SuccessHandler?, failureHandler: FailureHandler?, request: URLRequest, data: Data?, resp: URLResponse?, error: Error?) {
+    public static func completionHandler(networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, successHandler: SuccessHandler?, failureHandler: FailureHandler?, request: NetworkRequest, data: Data?, resp: NetworkRequestResponse?, error: Error?) {
         #if !OAUTH_APP_EXTENSIONS
             OAuthSwiftHTTPRequest.executionContext {
                 do {
@@ -142,7 +142,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         }
 
         // MARK: failure no response or data returned by server
-        guard let response = resp as? HTTPURLResponse, let responseData = data else {
+        guard let response = resp as? HTTPRequestResponse, let responseData = data else {
             let badRequestCode = 400
             let localizedDescription = OAuthSwiftHTTPRequest.descriptionForHTTPStatus(badRequestCode, responseString: "")
             var userInfo: [String: Any] = [
@@ -217,18 +217,18 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         objc_sync_enter(self)
         defer { objc_sync_exit(self) }
         // either cancel the request if it's already running or set the flag to prohibit creation of the request
-        if let task = task {
+        if let task = operation {
             task.cancel()
         } else {
             cancelRequested = true
         }
     }
 
-    open func makeRequest() throws -> URLRequest {
+    open func makeRequest() throws -> NetworkRequest {
         return try OAuthSwiftHTTPRequest.makeRequest(config: self.config)
     }
 
-    open class func makeRequest(config: Config) throws -> URLRequest {
+    open class func makeRequest(config: Config) throws -> NetworkRequest {
         var request = config.urlRequest
         return try setupRequestForOAuth(request: &request,
                                         parameters: config.parameters,
@@ -244,9 +244,10 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         parameters: OAuthSwift.Parameters,
         dataEncoding: String.Encoding,
         body: Data? = nil,
-        paramsLocation: ParamsLocation = .authorizationHeader) throws -> URLRequest {
+        paramsLocation: ParamsLocation = .authorizationHeader,
+        session: NetworkRequestHandler) throws -> NetworkRequest {
 
-        var request = URLRequest(url: url)
+        var request = session.request(url: url)
         request.httpMethod = method.rawValue
         for (key, value) in headers {
             request.setValue(value, forHTTPHeaderField: key)
@@ -262,11 +263,11 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
     }
 
     open class func setupRequestForOAuth(
-        request: inout URLRequest,
+        request: inout NetworkRequest,
         parameters: OAuthSwift.Parameters,
         dataEncoding: String.Encoding = OAuthSwiftDataEncoding,
         body: Data? = nil,
-        paramsLocation: ParamsLocation = .authorizationHeader) throws -> URLRequest {
+        paramsLocation: ParamsLocation = .authorizationHeader) throws -> NetworkRequest {
 
         let finalParameters: OAuthSwift.Parameters
         switch paramsLocation {
@@ -316,7 +317,7 @@ extension OAuthSwiftHTTPRequest {
     public struct Config {
 
         /// URLRequest (url, method, ...)
-        public var urlRequest: URLRequest
+        public var urlRequest: NetworkRequest
         /// These parameters are either added to the query string for GET, HEAD and DELETE requests or
         /// used as the http body in case of POST, PUT or PATCH requests.
         ///
@@ -349,7 +350,7 @@ extension OAuthSwiftHTTPRequest {
             self.init(urlRequest: urlRequest, parameters: parameters, paramsLocation: paramsLocation, dataEncoding: dataEncoding, sessionFactory: sessionFactory)
         }
 
-        public init(urlRequest: URLRequest, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, dataEncoding: String.Encoding = OAuthSwiftDataEncoding, sessionFactory: URLSessionFactory = .default) {
+        public init(urlRequest: NetworkRequest, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, dataEncoding: String.Encoding = OAuthSwiftDataEncoding, sessionFactory: URLSessionFactory = .default) {
             self.urlRequest = urlRequest
             self.parameters = parameters
             self.paramsLocation = paramsLocation
@@ -446,7 +447,7 @@ public struct URLSessionFactory {
     public var useDataTaskClosure = true
 
     /// Create a new URLSession
-    func build() -> URLSession {
+    func build() -> NetworkRequestHandler {
         return URLSession(configuration: self.configuration, delegate: self.delegate, delegateQueue: self.queue)
     }
 }
