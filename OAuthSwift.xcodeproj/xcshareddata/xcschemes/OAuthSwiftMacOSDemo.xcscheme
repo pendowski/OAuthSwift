@@ -28,6 +28,16 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C4D50DF61BFB693F0053B624"
+               BuildableName = "OAuthSwiftTestsMacOS.xctest"
+               BlueprintName = "OAuthSwiftTestsMacOS"
+               ReferencedContainer = "container:OAuthSwift.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference
