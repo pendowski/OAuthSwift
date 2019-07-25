@@ -52,23 +52,23 @@ extension OAuthSwiftClient {
         return request(url, method: method, parameters: parameters, headers: headers, body: body, checkTokenExpiration: checkTokenExpiration, success: success, failure: failure)
     }
 
-    open func get(_ url: URLConvertible, parameters: OAuthSwift.Parameters = [:], headers: OAuthSwift.Headers? = nil, success: OAuthSwiftHTTPRequest.SuccessHandler?, failure: OAuthSwiftHTTPRequest.Obj_FailureHandler?) -> OAuthSwiftRequestHandle? {
+    open func objc_get(_ url: URLConvertible, parameters: OAuthSwift.Parameters = [:], headers: OAuthSwift.Headers? = nil, success: OAuthSwiftHTTPRequest.SuccessHandler?, failure: OAuthSwiftHTTPRequest.Obj_FailureHandler?) -> OAuthSwiftRequestHandle? {
         return self.request(url, method: .GET, parameters: parameters, headers: headers, success: success, failure: failure)
     }
 
-    open func post(_ url: URLConvertible, parameters: OAuthSwift.Parameters = [:], headers: OAuthSwift.Headers? = nil, body: Data? = nil, success: OAuthSwiftHTTPRequest.SuccessHandler?, failure: OAuthSwiftHTTPRequest.Obj_FailureHandler?) -> OAuthSwiftRequestHandle? {
+    open func objc_post(_ url: URLConvertible, parameters: OAuthSwift.Parameters = [:], headers: OAuthSwift.Headers? = nil, body: Data? = nil, success: OAuthSwiftHTTPRequest.SuccessHandler?, failure: OAuthSwiftHTTPRequest.Obj_FailureHandler?) -> OAuthSwiftRequestHandle? {
         return self.request(url, method: .POST, parameters: parameters, headers: headers, body: body, success: success, failure: failure)
     }
 
-    open func put(_ url: URLConvertible, parameters: OAuthSwift.Parameters = [:], headers: OAuthSwift.Headers? = nil, body: Data? = nil, success: OAuthSwiftHTTPRequest.SuccessHandler?, failure: OAuthSwiftHTTPRequest.Obj_FailureHandler?) -> OAuthSwiftRequestHandle? {
+    open func objc_put(_ url: URLConvertible, parameters: OAuthSwift.Parameters = [:], headers: OAuthSwift.Headers? = nil, body: Data? = nil, success: OAuthSwiftHTTPRequest.SuccessHandler?, failure: OAuthSwiftHTTPRequest.Obj_FailureHandler?) -> OAuthSwiftRequestHandle? {
         return self.request(url, method: .PUT, parameters: parameters, headers: headers, body: body, success: success, failure: failure)
     }
 
-    open func delete(_ url: URLConvertible, parameters: OAuthSwift.Parameters = [:], headers: OAuthSwift.Headers? = nil, success: OAuthSwiftHTTPRequest.SuccessHandler?, failure: OAuthSwiftHTTPRequest.Obj_FailureHandler?) -> OAuthSwiftRequestHandle? {
+    open func objc_delete(_ url: URLConvertible, parameters: OAuthSwift.Parameters = [:], headers: OAuthSwift.Headers? = nil, success: OAuthSwiftHTTPRequest.SuccessHandler?, failure: OAuthSwiftHTTPRequest.Obj_FailureHandler?) -> OAuthSwiftRequestHandle? {
         return self.request(url, method: .DELETE, parameters: parameters, headers: headers, success: success, failure: failure)
     }
 
-    open func patch(_ url: URLConvertible, parameters: OAuthSwift.Parameters = [:], headers: OAuthSwift.Headers? = nil, success: OAuthSwiftHTTPRequest.SuccessHandler?, failure: OAuthSwiftHTTPRequest.Obj_FailureHandler?) -> OAuthSwiftRequestHandle? {
+    open func objc_patch(_ url: URLConvertible, parameters: OAuthSwift.Parameters = [:], headers: OAuthSwift.Headers? = nil, success: OAuthSwiftHTTPRequest.SuccessHandler?, failure: OAuthSwiftHTTPRequest.Obj_FailureHandler?) -> OAuthSwiftRequestHandle? {
         return self.request(url, method: .PATCH, parameters: parameters, headers: headers, success: success, failure: failure)
     }
 
