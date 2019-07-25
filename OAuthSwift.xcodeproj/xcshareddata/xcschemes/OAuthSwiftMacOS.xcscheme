@@ -34,8 +34,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "C4D50DF61BFB693F0053B624"
-               BuildableName = "OAuthSwiftTests.xctest"
-               BlueprintName = "OAuthSwiftTests"
+               BuildableName = "OAuthSwiftTestsMacOS.xctest"
+               BlueprintName = "OAuthSwiftTestsMacOS"
                ReferencedContainer = "container:OAuthSwift.xcodeproj">
             </BuildableReference>
          </TestableReference>
