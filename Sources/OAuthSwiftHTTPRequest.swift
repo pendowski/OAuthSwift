@@ -32,9 +32,9 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
 
     public var config: Config
 
-    private var request: NetworkRequest?
-    private var operation: NetworkRequestOperation?
-    private var session: NetworkRequestHandler!
+    private var request: OAuthSwiftNetworkRequest?
+    private var operation: OAuthSwiftNetworkRequestOperation?
+    private var session: OAuthSwiftNetworkRequestHandler!
     private var usesNetworkActivity: Bool {
         return config.sessionFactory.useDataTaskClosure
     }
@@ -52,7 +52,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         self.init(config: Config(url: url, httpMethod: method, httpBody: httpBody, headers: headers, parameters: parameters, paramsLocation: paramsLocation, sessionFactory: sessionFactory), networkActivityNotifier: networkActivityNotifier)
     }
 
-    convenience init(request: NetworkRequest, paramsLocation: ParamsLocation = .authorizationHeader, sessionFactory: SessionFactory = URLSessionFactory.default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+    convenience init(request: OAuthSwiftNetworkRequest, paramsLocation: ParamsLocation = .authorizationHeader, sessionFactory: SessionFactory = URLSessionFactory.default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
         self.init(config: Config(urlRequest: request, paramsLocation: paramsLocation, sessionFactory: sessionFactory), networkActivityNotifier: networkActivityNotifier)
     }
 
@@ -90,7 +90,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
             let usedRequest = self.request!
 
             if self.config.sessionFactory.useDataTaskClosure {
-                let completionHandler: (Data?, NetworkRequestResponse?, Error?) -> Void = { data, resp, error in
+                let completionHandler: (Data?, OAuthSwiftNetworkRequestResponse?, Error?) -> Void = { data, resp, error in
                     OAuthSwiftHTTPRequest.completionHandler(networkActivityNotifier: networkActivityNotifier,
                                                             successHandler: success,
                                                             failureHandler: failure,
@@ -116,7 +116,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
     }
 
     /// Function called when receiving data from server.
-    public static func completionHandler(networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, successHandler: SuccessHandler?, failureHandler: FailureHandler?, request: NetworkRequest, data: Data?, resp: NetworkRequestResponse?, error: Error?) {
+    public static func completionHandler(networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, successHandler: SuccessHandler?, failureHandler: FailureHandler?, request: OAuthSwiftNetworkRequest, data: Data?, resp: OAuthSwiftNetworkRequestResponse?, error: Error?) {
         #if !OAUTH_APP_EXTENSIONS
             OAuthSwiftHTTPRequest.executionContext {
                 do {
@@ -142,7 +142,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         }
 
         // MARK: failure no response or data returned by server
-        guard let response = resp as? HTTPRequestResponse, let responseData = data else {
+        guard let response = resp as? OAuthSwiftHTTPRequestResponse, let responseData = data else {
             let badRequestCode = 400
             let localizedDescription = OAuthSwiftHTTPRequest.descriptionForHTTPStatus(badRequestCode, responseString: "")
             var userInfo: [String: Any] = [
@@ -224,11 +224,11 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         }
     }
 
-    open func makeRequest() throws -> NetworkRequest {
+    open func makeRequest() throws -> OAuthSwiftNetworkRequest {
         return try OAuthSwiftHTTPRequest.makeRequest(config: self.config)
     }
 
-    open class func makeRequest(config: Config) throws -> NetworkRequest {
+    open class func makeRequest(config: Config) throws -> OAuthSwiftNetworkRequest {
         var request = config.urlRequest
         return try setupRequestForOAuth(request: &request,
                                         parameters: config.parameters,
@@ -245,7 +245,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         dataEncoding: String.Encoding,
         body: Data? = nil,
         paramsLocation: ParamsLocation = .authorizationHeader,
-        session: NetworkRequestHandler) throws -> NetworkRequest {
+        session: OAuthSwiftNetworkRequestHandler) throws -> OAuthSwiftNetworkRequest {
 
         var request = session.request(url: url)
         request.httpMethod = method.rawValue
@@ -263,11 +263,11 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
     }
 
     open class func setupRequestForOAuth(
-        request: inout NetworkRequest,
+        request: inout OAuthSwiftNetworkRequest,
         parameters: OAuthSwift.Parameters,
         dataEncoding: String.Encoding = OAuthSwiftDataEncoding,
         body: Data? = nil,
-        paramsLocation: ParamsLocation = .authorizationHeader) throws -> NetworkRequest {
+        paramsLocation: ParamsLocation = .authorizationHeader) throws -> OAuthSwiftNetworkRequest {
 
         let finalParameters: OAuthSwift.Parameters
         switch paramsLocation {
@@ -317,7 +317,7 @@ extension OAuthSwiftHTTPRequest {
     public struct Config {
 
         /// URLRequest (url, method, ...)
-        public var urlRequest: NetworkRequest
+        public var urlRequest: OAuthSwiftNetworkRequest
         /// These parameters are either added to the query string for GET, HEAD and DELETE requests or
         /// used as the http body in case of POST, PUT or PATCH requests.
         ///
@@ -350,7 +350,7 @@ extension OAuthSwiftHTTPRequest {
             self.init(urlRequest: urlRequest, parameters: parameters, paramsLocation: paramsLocation, dataEncoding: dataEncoding, sessionFactory: sessionFactory)
         }
 
-        public init(urlRequest: NetworkRequest, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, dataEncoding: String.Encoding = OAuthSwiftDataEncoding, sessionFactory: SessionFactory) {
+        public init(urlRequest: OAuthSwiftNetworkRequest, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, dataEncoding: String.Encoding = OAuthSwiftDataEncoding, sessionFactory: SessionFactory) {
             self.urlRequest = urlRequest
             self.parameters = parameters
             self.paramsLocation = paramsLocation
@@ -434,7 +434,7 @@ extension OAuthSwiftHTTPRequest {
 public protocol SessionFactory {
     var useDataTaskClosure: Bool { get }
     
-    func build() -> NetworkRequestHandler
+    func build() -> OAuthSwiftNetworkRequestHandler
 }
 
 /// configure how URLSession is initialized
@@ -453,7 +453,7 @@ public struct URLSessionFactory: SessionFactory {
     public var useDataTaskClosure = true
 
     /// Create a new URLSession
-    public func build() -> NetworkRequestHandler {
+    public func build() -> OAuthSwiftNetworkRequestHandler {
         return URLSession(configuration: self.configuration, delegate: self.delegate, delegateQueue: self.queue)
     }
 }

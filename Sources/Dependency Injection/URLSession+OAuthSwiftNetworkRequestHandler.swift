@@ -1,5 +1,5 @@
 //
-//  URLSession+NetworkRequestHandler.swift
+//  URLSession+OAuthSwiftNetworkRequestHandler.swift
 //  OAuthSwift
 //
 //  Created by Jarek Pendowski on 24/07/2019.
@@ -8,32 +8,32 @@
 
 import Foundation
 
-extension URLRequest: NetworkRequest {
+extension URLRequest: OAuthSwiftNetworkRequest {
     public init(url: URL) {
         self.init(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 60)
     }
 }
 
-extension URLResponse: NetworkRequestResponse {
+extension URLResponse: OAuthSwiftNetworkRequestResponse {
     
 }
 
-extension HTTPURLResponse: HTTPRequestResponse {
+extension HTTPURLResponse: OAuthSwiftHTTPRequestResponse {
     
 }
 
-extension URLSessionDataTask: NetworkRequestOperation {
+extension URLSessionDataTask: OAuthSwiftNetworkRequestOperation {
     
 }
 
-extension URLSession: NetworkRequestHandler {
+extension URLSession: OAuthSwiftNetworkRequestHandler {
     
-    public func dataOperation(with url: URL, completionHandler: NetworkRequestCallback?) -> NetworkRequestOperation {
+    public func dataOperation(with url: URL, completionHandler: OAuthSwiftNetworkRequestCallback?) -> OAuthSwiftNetworkRequestOperation {
         return dataTask(with: url, completionHandler: completionHandler ?? { _,_,_ in })
     }
     
     
-    public func dataOperation(with request: NetworkRequest, completionHandler: NetworkRequestCallback?) -> NetworkRequestOperation {
+    public func dataOperation(with request: OAuthSwiftNetworkRequest, completionHandler: OAuthSwiftNetworkRequestCallback?) -> OAuthSwiftNetworkRequestOperation {
         guard let request = request as? URLRequest else {
             preconditionFailure()
         }
@@ -45,7 +45,7 @@ extension URLSession: NetworkRequestHandler {
     }
     
     
-    public func request(url: URL) -> NetworkRequest {
+    public func request(url: URL) -> OAuthSwiftNetworkRequest {
         return URLRequest(url: url)
     }
     

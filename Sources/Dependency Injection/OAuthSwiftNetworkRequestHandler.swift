@@ -1,5 +1,5 @@
 //
-//  HTTPRequestHandler.swift
+//  OAuthSwiftNetworkRequestHandler.swift
 //  OAuthSwift
 //
 //  Created by Jarek Pendowski on 24/07/2019.
@@ -8,9 +8,9 @@
 
 import Foundation
 
-public typealias NetworkRequestCallback = (Data?, NetworkRequestResponse?, Error?) -> Void
+public typealias OAuthSwiftNetworkRequestCallback = (Data?, OAuthSwiftNetworkRequestResponse?, Error?) -> Void
 
-public protocol NetworkRequest {
+public protocol OAuthSwiftNetworkRequest {
     var url: URL? { get set }
     var httpMethod: String? { get set }
     var allHTTPHeaderFields: [String : String]? { get set }
@@ -25,30 +25,30 @@ public protocol NetworkRequest {
     mutating func addValue(_ value: String, forHTTPHeaderField field: String)
 }
 
-public protocol NetworkRequestResponse {
+public protocol OAuthSwiftNetworkRequestResponse {
     var url: URL? { get }
 }
 
-public protocol HTTPRequestResponse: NetworkRequestResponse {
+public protocol OAuthSwiftHTTPRequestResponse: OAuthSwiftNetworkRequestResponse {
     var statusCode: Int { get }
     var allHeaderFields: [AnyHashable : Any] { get }
 }
 
-public protocol NetworkRequestOperation {
+public protocol OAuthSwiftNetworkRequestOperation {
     func resume()
     func cancel()
 }
 
-public protocol NetworkRequestHandler {
-    func dataOperation(with request: NetworkRequest, completionHandler: NetworkRequestCallback?) -> NetworkRequestOperation
-    func dataOperation(with url: URL, completionHandler: NetworkRequestCallback?) -> NetworkRequestOperation
+public protocol OAuthSwiftNetworkRequestHandler {
+    func dataOperation(with request: OAuthSwiftNetworkRequest, completionHandler: OAuthSwiftNetworkRequestCallback?) -> OAuthSwiftNetworkRequestOperation
+    func dataOperation(with url: URL, completionHandler: OAuthSwiftNetworkRequestCallback?) -> OAuthSwiftNetworkRequestOperation
     func finishOperationsAndInvalidate()
     
-    func request(url: URL) -> NetworkRequest
+    func request(url: URL) -> OAuthSwiftNetworkRequest
 }
 
-extension NetworkRequestHandler {
-    func dataOperation(with request: NetworkRequest) -> NetworkRequestOperation {
+extension OAuthSwiftNetworkRequestHandler {
+    func dataOperation(with request: OAuthSwiftNetworkRequest) -> OAuthSwiftNetworkRequestOperation {
         return dataOperation(with: request, completionHandler: nil)
     }
 }

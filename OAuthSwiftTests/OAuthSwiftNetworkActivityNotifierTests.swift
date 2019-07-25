@@ -205,19 +205,19 @@ fileprivate class MockedSessionFactory: SessionFactory {
     let useDataTaskClosure: Bool = true
     let handler = MockedNetworkHandler()
     
-    func build() -> NetworkRequestHandler {
+    func build() -> OAuthSwiftNetworkRequestHandler {
         return handler
     }
 }
 
-fileprivate class MockedNetworkOperation: NetworkRequestOperation {
+fileprivate class MockedNetworkOperation: OAuthSwiftNetworkRequestOperation {
     
     let cancelHandler: () -> Void
-    let completionHandler: NetworkRequestCallback?
+    let completionHandler: OAuthSwiftNetworkRequestCallback?
     var isCanceled: Bool = false
     var isResumed: Bool = false
     
-    init(cancelHandler: @escaping () -> Void, completionHandler: NetworkRequestCallback?) {
+    init(cancelHandler: @escaping () -> Void, completionHandler: OAuthSwiftNetworkRequestCallback?) {
         self.cancelHandler = cancelHandler
         self.completionHandler = completionHandler
     }
@@ -233,13 +233,13 @@ fileprivate class MockedNetworkOperation: NetworkRequestOperation {
     }
 }
 
-fileprivate struct MockedHTTPResponse: HTTPRequestResponse {
+fileprivate struct MockedHTTPResponse: OAuthSwiftHTTPRequestResponse {
     let statusCode: Int
     let allHeaderFields: [AnyHashable : Any]
     let url: URL?
 }
 
-fileprivate class MockedNetworkHandler: NetworkRequestHandler {
+fileprivate class MockedNetworkHandler: OAuthSwiftNetworkRequestHandler {
     
     struct Response {
         let data: Data?
@@ -252,12 +252,12 @@ fileprivate class MockedNetworkHandler: NetworkRequestHandler {
     var invalidated = false
     var operations: [URL: MockedNetworkOperation] = [:]
     
-    func dataOperation(with url: URL, completionHandler: NetworkRequestCallback?) -> NetworkRequestOperation {
+    func dataOperation(with url: URL, completionHandler: OAuthSwiftNetworkRequestCallback?) -> OAuthSwiftNetworkRequestOperation {
         if invalidated { XCTFail() }
         return enqueueOperation(url: url, completionHandler)
     }
     
-    func dataOperation(with request: NetworkRequest, completionHandler: NetworkRequestCallback?) -> NetworkRequestOperation {
+    func dataOperation(with request: OAuthSwiftNetworkRequest, completionHandler: OAuthSwiftNetworkRequestCallback?) -> OAuthSwiftNetworkRequestOperation {
         if invalidated { XCTFail() }
         return enqueueOperation(url: request.url!, completionHandler)
     }
@@ -266,7 +266,7 @@ fileprivate class MockedNetworkHandler: NetworkRequestHandler {
         invalidated = true
     }
     
-    func request(url: URL) -> NetworkRequest {
+    func request(url: URL) -> OAuthSwiftNetworkRequest {
         return URLRequest(url: url)
     }
     
@@ -281,7 +281,7 @@ fileprivate class MockedNetworkHandler: NetworkRequestHandler {
     
     // MARK: - Private
     
-    private func enqueueOperation(url: URL, _ completionHandler: NetworkRequestCallback?) -> NetworkRequestOperation {
+    private func enqueueOperation(url: URL, _ completionHandler: OAuthSwiftNetworkRequestCallback?) -> OAuthSwiftNetworkRequestOperation {
         assert(operations[url] == nil)
         let operation = MockedNetworkOperation(cancelHandler: { [weak self] in
             self?.operations.removeValue(forKey: url)

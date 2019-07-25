@@ -19,7 +19,7 @@ open class OAuthSwiftClient: NSObject {
     fileprivate(set) open var credential: OAuthSwiftCredential
     open var paramsLocation: OAuthSwiftHTTPRequest.ParamsLocation = .authorizationHeader
     /// Contains default URL session configuration
-    open var sessionFactory: SessionFactory = URLSessionFactory()
+    open var sessionFactory: SessionFactory
 
     static let separator: String = "\r\n"
     static var separatorData: Data = {
@@ -29,19 +29,20 @@ open class OAuthSwiftClient: NSObject {
     let networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?
 
     // MARK: init
-    public init(credential: OAuthSwiftCredential, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+    public init(credential: OAuthSwiftCredential, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, sessionFactory: SessionFactory) {
         self.credential = credential
         self.networkActivityNotifier = networkActivityNotifier
+        self.sessionFactory = sessionFactory
     }
 
-    public convenience init(consumerKey: String, consumerSecret: String, version: OAuthSwiftCredential.Version = .oauth1, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+    public convenience init(consumerKey: String, consumerSecret: String, version: OAuthSwiftCredential.Version = .oauth1, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, sessionFactory: SessionFactory = URLSessionFactory.default) {
         let credential = OAuthSwiftCredential(consumerKey: consumerKey, consumerSecret: consumerSecret)
         credential.version = version
-        self.init(credential: credential, networkActivityNotifier: networkActivityNotifier)
+        self.init(credential: credential, networkActivityNotifier: networkActivityNotifier, sessionFactory: sessionFactory)
     }
 
-    public convenience init(consumerKey: String, consumerSecret: String, oauthToken: String, oauthTokenSecret: String, version: OAuthSwiftCredential.Version, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
-        self.init(consumerKey: consumerKey, consumerSecret: consumerSecret, version: version, networkActivityNotifier: networkActivityNotifier)
+    public convenience init(consumerKey: String, consumerSecret: String, oauthToken: String, oauthTokenSecret: String, version: OAuthSwiftCredential.Version, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, sessionFactory: SessionFactory = URLSessionFactory.default) {
+        self.init(consumerKey: consumerKey, consumerSecret: consumerSecret, version: version, networkActivityNotifier: networkActivityNotifier, sessionFactory: sessionFactory)
         self.credential.oauthToken = oauthToken
         self.credential.oauthTokenSecret = oauthTokenSecret
     }

@@ -14,11 +14,11 @@ public class OAuthSwiftResponse: NSObject { // not a struct for objc
     /// The data returned by the server.
     public var data: Data
     /// The server's response to the URL request.
-    public var response: HTTPRequestResponse
+    public var response: OAuthSwiftHTTPRequestResponse
     /// The URL request sent to the server.
-    public var request: NetworkRequest?
+    public var request: OAuthSwiftNetworkRequest?
 
-    public init(data: Data, response: HTTPRequestResponse, request: NetworkRequest?) {
+    public init(data: Data, response: OAuthSwiftHTTPRequestResponse, request: OAuthSwiftNetworkRequest?) {
         self.data = data
         self.response = response
         self.request = request

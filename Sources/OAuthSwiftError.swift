@@ -31,15 +31,15 @@ public enum OAuthSwiftError: Error {
     case cancelled
 
     /// Generic request error
-    case requestError(error: Error, request: NetworkRequest)
+    case requestError(error: Error, request: OAuthSwiftNetworkRequest)
     /// The provided token is expired, retrieve new token by using the refresh token
     case tokenExpired(error: Error?)
     /// If the user has not either allowed or denied the request yet, the authorization server will return the authorization_pending error.
-    case authorizationPending(error: Error, request: NetworkRequest)
+    case authorizationPending(error: Error, request: OAuthSwiftNetworkRequest)
     /// If the device is polling too frequently, the authorization server will return the slow_down error.
-    case slowDown(error: Error, request: NetworkRequest)
+    case slowDown(error: Error, request: OAuthSwiftNetworkRequest)
     /// If the user denies the request.
-    case accessDenied(error: Error, request: NetworkRequest)
+    case accessDenied(error: Error, request: OAuthSwiftNetworkRequest)
 
     public static let Domain = "OAuthSwiftError"
     public static let ResponseDataKey = "OAuthSwiftError.response.data"
