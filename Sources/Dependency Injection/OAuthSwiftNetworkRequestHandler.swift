@@ -8,7 +8,7 @@
 
 import Foundation
 
-public typealias OAuthSwiftNetworkRequestCallback = (Data?, OAuthSwiftNetworkRequestResponse?, Error?) -> Void
+public typealias OAuthSwiftNetworkRequestCallback = (Data?, OAuthSwiftNetworkResponse?, Error?) -> Void
 
 public protocol OAuthSwiftNetworkRequest {
     var url: URL? { get set }
@@ -25,11 +25,11 @@ public protocol OAuthSwiftNetworkRequest {
     mutating func addValue(_ value: String, forHTTPHeaderField field: String)
 }
 
-public protocol OAuthSwiftNetworkRequestResponse {
+public protocol OAuthSwiftNetworkResponse {
     var url: URL? { get }
 }
 
-public protocol OAuthSwiftHTTPRequestResponse: OAuthSwiftNetworkRequestResponse {
+public protocol OAuthSwiftHTTPResponse: OAuthSwiftNetworkResponse {
     var statusCode: Int { get }
     var allHeaderFields: [AnyHashable : Any] { get }
 }

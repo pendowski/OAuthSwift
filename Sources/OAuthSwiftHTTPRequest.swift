@@ -90,7 +90,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
             let usedRequest = self.request!
 
             if self.config.sessionFactory.useDataTaskClosure {
-                let completionHandler: (Data?, OAuthSwiftNetworkRequestResponse?, Error?) -> Void = { data, resp, error in
+                let completionHandler: (Data?, OAuthSwiftNetworkResponse?, Error?) -> Void = { data, resp, error in
                     OAuthSwiftHTTPRequest.completionHandler(networkActivityNotifier: networkActivityNotifier,
                                                             successHandler: success,
                                                             failureHandler: failure,
@@ -116,7 +116,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
     }
 
     /// Function called when receiving data from server.
-    public static func completionHandler(networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, successHandler: SuccessHandler?, failureHandler: FailureHandler?, request: OAuthSwiftNetworkRequest, data: Data?, resp: OAuthSwiftNetworkRequestResponse?, error: Error?) {
+    public static func completionHandler(networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, successHandler: SuccessHandler?, failureHandler: FailureHandler?, request: OAuthSwiftNetworkRequest, data: Data?, resp: OAuthSwiftNetworkResponse?, error: Error?) {
         #if !OAUTH_APP_EXTENSIONS
             OAuthSwiftHTTPRequest.executionContext {
                 do {
@@ -142,7 +142,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         }
 
         // MARK: failure no response or data returned by server
-        guard let response = resp as? OAuthSwiftHTTPRequestResponse, let responseData = data else {
+        guard let response = resp as? OAuthSwiftHTTPResponse, let responseData = data else {
             let badRequestCode = 400
             let localizedDescription = OAuthSwiftHTTPRequest.descriptionForHTTPStatus(badRequestCode, responseString: "")
             var userInfo: [String: Any] = [

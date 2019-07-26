@@ -9,7 +9,7 @@
 import Foundation
 
 public protocol OAuthSwiftNetworkActivityNotifierType {
-    var activeNetworkActivities: Int { get }
+    var activeNetworkActivitiesCount: Int { get }
     
     func networkActivityStarted()
     func networkActivityEnded() throws
@@ -28,10 +28,10 @@ public class OAuthSwiftDefaultNetworkActivityNotifier: OAuthSwiftNetworkActivity
         case unbalancedActivityCall
     }
     
-    public var activeNetworkActivities: Int = 0 {
+    public var activeNetworkActivitiesCount: Int = 0 {
         didSet {
-            if activeNetworkActivities != oldValue {
-                updateHandler(activeNetworkActivities > 0)
+            if activeNetworkActivitiesCount != oldValue {
+                updateHandler(activeNetworkActivitiesCount > 0)
             }
         }
     }
@@ -41,14 +41,14 @@ public class OAuthSwiftDefaultNetworkActivityNotifier: OAuthSwiftNetworkActivity
     }
     
     public func networkActivityStarted() {
-        activeNetworkActivities += 1
+        activeNetworkActivitiesCount += 1
     }
     
     public func networkActivityEnded() throws {
-        if activeNetworkActivities <= 0 {
+        if activeNetworkActivitiesCount <= 0 {
             throw Error.unbalancedActivityCall
         }
-        activeNetworkActivities -= 1
+        activeNetworkActivitiesCount -= 1
     }
     
 }

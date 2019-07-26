@@ -12,6 +12,7 @@ import XCTest
 class OAuthSwiftNetworkActivityNotifierTests: XCTestCase {
     
     let url = URL(string: "http://github.com/pendowski/OAuthSwift")!
+    let shortMoment: TimeInterval = 0.01
 
     func testMockNotRunning() {
         let timeout = expectation(description: "Timeout")
@@ -21,9 +22,7 @@ class OAuthSwiftNetworkActivityNotifierTests: XCTestCase {
             XCTFail()
         }
         
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-            timeout.fulfill()
-        }
+        timeout.fulfill(after: shortMoment)
         
         waitForExpectations(timeout: 1, handler: nil)
     }
@@ -38,9 +37,7 @@ class OAuthSwiftNetworkActivityNotifierTests: XCTestCase {
         operation.resume()
         operation.cancel()
         
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) {
-            timeout.fulfill()
-        }
+        timeout.fulfill(after: shortMoment)
         
         waitForExpectations(timeout: 1, handler: nil)
     }
@@ -68,18 +65,18 @@ class OAuthSwiftNetworkActivityNotifierTests: XCTestCase {
     func testDefaultNotifierCounting() {
         let notifier = OAuthSwiftDefaultNetworkActivityNotifier()
         
-        XCTAssertEqual(notifier.activeNetworkActivities, 0)
+        XCTAssertEqual(notifier.activeNetworkActivitiesCount, 0)
         notifier.networkActivityStarted()
-        XCTAssertEqual(notifier.activeNetworkActivities, 1)
+        XCTAssertEqual(notifier.activeNetworkActivitiesCount, 1)
         notifier.networkActivityStarted()
         notifier.networkActivityStarted()
-        XCTAssertEqual(notifier.activeNetworkActivities, 3)
+        XCTAssertEqual(notifier.activeNetworkActivitiesCount, 3)
         
         _ = try? notifier.networkActivityEnded()
-        XCTAssertEqual(notifier.activeNetworkActivities, 2)
+        XCTAssertEqual(notifier.activeNetworkActivitiesCount, 2)
         _ = try? notifier.networkActivityEnded()
         _ = try? notifier.networkActivityEnded()
-        XCTAssertEqual(notifier.activeNetworkActivities, 0)
+        XCTAssertEqual(notifier.activeNetworkActivitiesCount, 0)
         
         do {
             try notifier.networkActivityEnded()
@@ -117,28 +114,26 @@ class OAuthSwiftNetworkActivityNotifierTests: XCTestCase {
 
         let callbackCalled = expectation(description: "Callback called")
      
-        XCTAssertEqual(notifier.activeNetworkActivities, 0)
+        XCTAssertEqual(notifier.activeNetworkActivitiesCount, 0)
         client.makeRequest(URLRequest(url: url)).start(success: { _ in
             XCTFail()
         }) { _ in
-            XCTAssertEqual(notifier.activeNetworkActivities, 1) // because it's called asynchronously
+            XCTAssertEqual(notifier.activeNetworkActivitiesCount, 1) // because it's called asynchronously
             
             DispatchQueue.main.async {
-                XCTAssertEqual(notifier.activeNetworkActivities, 0)
+                XCTAssertEqual(notifier.activeNetworkActivitiesCount, 0)
                 callbackCalled.fulfill()
             }
         }
-        XCTAssertEqual(notifier.activeNetworkActivities, 0) // because it's called asynchronously
+        XCTAssertEqual(notifier.activeNetworkActivitiesCount, 0) // because it's called asynchronously
         
         let asyncNetworkActivityCalled = expectation(description: "Next main loop")
         
-        DispatchQueue.main.async {
-            asyncNetworkActivityCalled.fulfill()
-        }
+        asyncNetworkActivityCalled.fulfillInNextLoop()
         
         wait(for: [asyncNetworkActivityCalled], timeout: 0.1)
         
-        XCTAssertEqual(notifier.activeNetworkActivities, 1)
+        XCTAssertEqual(notifier.activeNetworkActivitiesCount, 1)
         
         sessionFactory.handler.fulfill(url: url, withResponse: .init(data: nil, response: nil, error: nil))
         
@@ -162,9 +157,9 @@ class OAuthSwiftNetworkActivityNotifierTests: XCTestCase {
         request.httpMethod = "POST"
         request.httpBody = Data(bytes: "{ \"body\": \"true\" )".utf8)
         
-        XCTAssertEqual(notifier.activeNetworkActivities, 0)
+        XCTAssertEqual(notifier.activeNetworkActivitiesCount, 0)
         client.makeRequest(request).start(success: { response in
-            XCTAssertEqual(notifier.activeNetworkActivities, 1) // because it's called asynchronously
+            XCTAssertEqual(notifier.activeNetworkActivitiesCount, 1) // because it's called asynchronously
             
             XCTAssertEqual(response.data, expectedResponse.data)
             XCTAssertEqual(response.response.allHeaderFields["Content-Type"] as? String, expectedResponse.response?.allHeaderFields["Content-Type"] as? String)
@@ -175,23 +170,21 @@ class OAuthSwiftNetworkActivityNotifierTests: XCTestCase {
             XCTAssertEqual(response.request?.httpBody, request.httpBody)
             
             DispatchQueue.main.async {
-                XCTAssertEqual(notifier.activeNetworkActivities, 0)
+                XCTAssertEqual(notifier.activeNetworkActivitiesCount, 0)
                 callbackCalled.fulfill()
             }
         }) { _ in
             XCTFail()
         }
-        XCTAssertEqual(notifier.activeNetworkActivities, 0) // because it's called asynchronously
+        XCTAssertEqual(notifier.activeNetworkActivitiesCount, 0) // because it's called asynchronously
         
         let asyncNetworkActivityCalled = expectation(description: "Next main loop")
         
-        DispatchQueue.main.async {
-            asyncNetworkActivityCalled.fulfill()
-        }
+        asyncNetworkActivityCalled.fulfillInNextLoop()
         
         wait(for: [asyncNetworkActivityCalled], timeout: 0.1)
         
-        XCTAssertEqual(notifier.activeNetworkActivities, 1)
+        XCTAssertEqual(notifier.activeNetworkActivitiesCount, 1)
         
         sessionFactory.handler.fulfill(url: url, withResponse: expectedResponse)
         
@@ -233,7 +226,21 @@ fileprivate class MockedNetworkOperation: OAuthSwiftNetworkRequestOperation {
     }
 }
 
-fileprivate struct MockedHTTPResponse: OAuthSwiftHTTPRequestResponse {
+fileprivate extension XCTestExpectation {
+    func fulfill(after time: TimeInterval, on dispatchQueue: DispatchQueue = DispatchQueue.main) {
+        dispatchQueue.asyncAfter(deadline: DispatchTime.now() + time) {
+            self.fulfill()
+        }
+    }
+    
+    func fulfillInNextLoop(on dispatchQueue: DispatchQueue = DispatchQueue.main) {
+        dispatchQueue.async {
+            self.fulfill()
+        }
+    }
+}
+
+fileprivate struct MockedHTTPResponse: OAuthSwiftHTTPResponse {
     let statusCode: Int
     let allHeaderFields: [AnyHashable : Any]
     let url: URL?
@@ -298,13 +305,13 @@ fileprivate class MockedNetworkNotifier: OAuthSwiftNetworkActivityNotifierType {
         case unbalancedCall
     }
     
-    var activeNetworkActivities: Int = 0
+    var activeNetworkActivitiesCount: Int = 0
     
     func networkActivityStarted() {
-        activeNetworkActivities += 1
+        activeNetworkActivitiesCount += 1
     }
     
     func networkActivityEnded() throws {
-        activeNetworkActivities -= 1
+        activeNetworkActivitiesCount -= 1
     }
 }

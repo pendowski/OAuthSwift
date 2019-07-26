@@ -14,11 +14,11 @@ extension URLRequest: OAuthSwiftNetworkRequest {
     }
 }
 
-extension URLResponse: OAuthSwiftNetworkRequestResponse {
+extension URLResponse: OAuthSwiftNetworkResponse {
     
 }
 
-extension HTTPURLResponse: OAuthSwiftHTTPRequestResponse {
+extension HTTPURLResponse: OAuthSwiftHTTPResponse {
     
 }
 
