@@ -51,7 +51,7 @@ class OAuth1SwiftRequestTests: XCTestCase {
         }
         
         let oAuthSwiftHTTPRequest = OAuthSwiftHTTPRequest(url: URL(string: "http://127.0.0.1:\(port)")!, networkActivityNotifier: nil)
-        let successExpectation = expectation(description: "Expected `failure` to be called")
+        let successExpectation = expectation(description: "Expected `success` to be called")
         
         let failureHandler: OAuthSwiftHTTPRequest.FailureHandler  = { error in
             XCTFail("The failure handler should not be called.\(error)")
@@ -64,6 +64,54 @@ class OAuth1SwiftRequestTests: XCTestCase {
         }
         
         oAuthSwiftHTTPRequest.start(success: successHandler, failure: failureHandler)
+        waitForExpectations(timeout: DefaultTimeout, handler: nil)
+    }
+    
+    func testSuccessCustomRequestType() {
+        let server  = HttpServer()
+        server["/"] = { request in
+            return HttpResponse.badRequest(HttpResponseBody.text("invalid_token" as String))
+        }
+        let port: in_port_t = 8765
+        do {
+            try server.start(port)
+        } catch let e {
+            XCTFail("\(e)")
+        }
+        defer {
+            server.stop()
+        }
+        
+        class MockHTTPRequestSubclass: OAuthSwiftHTTPRequest {
+            override class func completionHandler(networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, successHandler: SuccessHandler?, failureHandler: FailureHandler?, request: OAuthSwiftNetworkRequest, data: Data?, resp: OAuthSwiftNetworkResponse?, error: Error?) {
+                let customAuthPolicyError = NSError(domain: "Tests", code: 400, userInfo: ["a": "b"])
+                failureHandler?(.tokenExpired(error: customAuthPolicyError))
+            }
+        }
+        
+        let client = OAuthSwiftClient(consumerKey: "", consumerSecret: "", networkActivityNotifier: nil)
+        client.sessionFactory.requestType = MockHTTPRequestSubclass.self
+        
+        let request = client.makeRequest("http://127.0.0.1:\(port)", method: .GET)
+        
+        guard let customRequest = request as? MockHTTPRequestSubclass else {
+            return XCTFail()
+        }
+        
+        let completionExpectation = expectation(description: "Expected callback to be called")
+        
+        customRequest.start(success: nil, failure: { error in
+            guard case let .tokenExpired(underlyingError) = error,
+                let unwrappedError = underlyingError,
+                case let underlyingNSError = unwrappedError as NSError else {
+                return XCTFail()
+            }
+            XCTAssertEqual(underlyingNSError.domain, "Tests")
+            XCTAssertEqual(underlyingNSError.code, 400)
+            XCTAssertEqual(underlyingNSError.userInfo.count, 1)
+            XCTAssertEqual(underlyingNSError.userInfo["a"] as? String, "b")
+            completionExpectation.fulfill()
+        })
         waitForExpectations(timeout: DefaultTimeout, handler: nil)
     }
 

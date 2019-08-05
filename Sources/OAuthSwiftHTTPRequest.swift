@@ -48,11 +48,11 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
 
     // MARK: INIT
 
-    convenience init(url: URL, method: Method = .GET, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, httpBody: Data? = nil, headers: OAuthSwift.Headers = [:], sessionFactory: SessionFactory = URLSessionFactory.default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+    required convenience public init(url: URL, method: Method = .GET, parameters: OAuthSwift.Parameters = [:], paramsLocation: ParamsLocation = .authorizationHeader, httpBody: Data? = nil, headers: OAuthSwift.Headers = [:], sessionFactory: SessionFactory = URLSessionFactory.default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
         self.init(config: Config(url: url, httpMethod: method, httpBody: httpBody, headers: headers, parameters: parameters, paramsLocation: paramsLocation, sessionFactory: sessionFactory), networkActivityNotifier: networkActivityNotifier)
     }
 
-    convenience init(request: OAuthSwiftNetworkRequest, paramsLocation: ParamsLocation = .authorizationHeader, sessionFactory: SessionFactory = URLSessionFactory.default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+    required convenience public init(request: OAuthSwiftNetworkRequest, paramsLocation: ParamsLocation = .authorizationHeader, sessionFactory: SessionFactory = URLSessionFactory.default, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
         self.init(config: Config(urlRequest: request, paramsLocation: paramsLocation, sessionFactory: sessionFactory), networkActivityNotifier: networkActivityNotifier)
     }
 
@@ -78,7 +78,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         
         let networkActivityNotifier = usesNetworkActivity ? self.networkActivityNotifier : nil
 
-        OAuthSwiftHTTPRequest.executionContext {
+        type(of: self).executionContext {
             // perform lock here to prevent cancel calls on another thread while creating the request
             objc_sync_enter(self)
             defer { objc_sync_exit(self) }
@@ -91,7 +91,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
 
             if self.config.sessionFactory.useDataTaskClosure {
                 let completionHandler: (Data?, OAuthSwiftNetworkResponse?, Error?) -> Void = { data, resp, error in
-                    OAuthSwiftHTTPRequest.completionHandler(networkActivityNotifier: networkActivityNotifier,
+                    type(of: self).completionHandler(networkActivityNotifier: networkActivityNotifier,
                                                             successHandler: success,
                                                             failureHandler: failure,
                                                             request: usedRequest,
@@ -116,9 +116,9 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
     }
 
     /// Function called when receiving data from server.
-    public static func completionHandler(networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, successHandler: SuccessHandler?, failureHandler: FailureHandler?, request: OAuthSwiftNetworkRequest, data: Data?, resp: OAuthSwiftNetworkResponse?, error: Error?) {
+    open class func completionHandler(networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?, successHandler: SuccessHandler?, failureHandler: FailureHandler?, request: OAuthSwiftNetworkRequest, data: Data?, resp: OAuthSwiftNetworkResponse?, error: Error?) {
         #if !OAUTH_APP_EXTENSIONS
-            OAuthSwiftHTTPRequest.executionContext {
+            self.executionContext {
                 do {
                     try networkActivityNotifier?.networkActivityEnded()
                 } catch {
@@ -144,7 +144,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         // MARK: failure no response or data returned by server
         guard let response = resp as? OAuthSwiftHTTPResponse, let responseData = data else {
             let badRequestCode = 400
-            let localizedDescription = OAuthSwiftHTTPRequest.descriptionForHTTPStatus(badRequestCode, responseString: "")
+            let localizedDescription = self.descriptionForHTTPStatus(badRequestCode, responseString: "")
             var userInfo: [String: Any] = [
                 NSLocalizedDescriptionKey: localizedDescription
             ]
@@ -177,7 +177,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
                     }
                 }
             } else {
-                localizedDescription = OAuthSwiftHTTPRequest.descriptionForHTTPStatus(response.statusCode, responseString: String(data: responseData, encoding: OAuthSwiftDataEncoding)!)
+                localizedDescription = self.descriptionForHTTPStatus(response.statusCode, responseString: String(data: responseData, encoding: OAuthSwiftDataEncoding)!)
             }
 
             var userInfo: [String: Any] = [
@@ -225,7 +225,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
     }
 
     open func makeRequest() throws -> OAuthSwiftNetworkRequest {
-        return try OAuthSwiftHTTPRequest.makeRequest(config: self.config)
+        return try type(of: self).makeRequest(config: self.config)
     }
 
     open class func makeRequest(config: Config) throws -> OAuthSwiftNetworkRequest {
@@ -433,6 +433,7 @@ extension OAuthSwiftHTTPRequest {
 
 public protocol SessionFactory {
     var useDataTaskClosure: Bool { get }
+    var requestType: OAuthSwiftHTTPRequest.Type { get set }
     
     func build() -> OAuthSwiftNetworkRequestHandler
 }
@@ -446,6 +447,8 @@ public struct URLSessionFactory: SessionFactory {
     public var queue = OperationQueue.main
     /// An optional delegate for the URLSession
     public weak var delegate: URLSessionDelegate?
+    
+    public var requestType: OAuthSwiftHTTPRequest.Type = OAuthSwiftHTTPRequest.self
 
     /// By default use a closure to receive data from server.
     /// If you set to false, you must in `delegate` take care of server response.

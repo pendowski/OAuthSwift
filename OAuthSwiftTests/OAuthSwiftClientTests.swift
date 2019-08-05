@@ -31,6 +31,21 @@ class OAuthSwiftClientTests: XCTestCase {
         testMakeRequest(.GET, url:url, ["a":"a", "b":"b"], "\(url)?a=a&b=b")
     }
     
+    func testMakeRequestCustomClass() {
+        class MockHTTPRequestSubclass: OAuthSwiftHTTPRequest { }
+        let client = OAuthSwiftClient(consumerKey: "", consumerSecret: "", networkActivityNotifier: nil)
+        client.sessionFactory.requestType = MockHTTPRequestSubclass.self
+        
+        let firstRequest = client.makeRequest(URLRequest(url: URL(string: url)!))
+        XCTAssert(firstRequest is MockHTTPRequestSubclass)
+        
+        let secondRequest = client.makeRequest(url, method: .GET)
+        XCTAssert(secondRequest is MockHTTPRequestSubclass)
+        
+        let thirdRequest = client.makeRequest(url, method: .GET, parameters: emptyParameters, headers: nil, body: nil)
+        XCTAssert(thirdRequest is MockHTTPRequestSubclass)
+    }
+    
     func testMakeRequestViaNSURLRequest() {
         testMakeNSURLRequest(.GET, url)
         testMakeNSURLRequest(.POST, url)
@@ -162,7 +177,7 @@ class OAuthSwiftClientTests: XCTestCase {
         XCTAssertTrue(bodyString?.contains("image/jpeg\r\n\r\nbinary\r\n") == true)
         XCTAssertTrue(bodyString?.contains("form-data; name=\"a\"\r\n\r\nb") == true)
     }
-
+    
 }
 
 extension XCTestCase {

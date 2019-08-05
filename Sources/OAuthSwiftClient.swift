@@ -20,7 +20,6 @@ open class OAuthSwiftClient: NSObject {
     open var paramsLocation: OAuthSwiftHTTPRequest.ParamsLocation = .authorizationHeader
     /// Contains default URL session configuration
     open var sessionFactory: SessionFactory
-
     static let separator: String = "\r\n"
     static var separatorData: Data = {
         return OAuthSwiftClient.separator.data(using: OAuthSwiftDataEncoding)!
@@ -94,7 +93,7 @@ open class OAuthSwiftClient: NSObject {
     }
 
     open func makeRequest(_ request: URLRequest) -> OAuthSwiftHTTPRequest {
-        let request = OAuthSwiftHTTPRequest(request: request, paramsLocation: self.paramsLocation, sessionFactory: self.sessionFactory, networkActivityNotifier: self.networkActivityNotifier)
+        let request = sessionFactory.requestType.init(request: request, paramsLocation: self.paramsLocation, sessionFactory: self.sessionFactory, networkActivityNotifier: self.networkActivityNotifier)
         request.config.updateRequest(credential: self.credential)
         return request
     }
@@ -104,7 +103,7 @@ open class OAuthSwiftClient: NSObject {
             return nil // XXX failure not thrown here
         }
 
-        let request = OAuthSwiftHTTPRequest(url: url, method: method, parameters: parameters, paramsLocation: self.paramsLocation, httpBody: body, headers: headers ?? [:], sessionFactory: self.sessionFactory, networkActivityNotifier: self.networkActivityNotifier)
+        let request = sessionFactory.requestType.init(url: url, method: method, parameters: parameters, paramsLocation: self.paramsLocation, httpBody: body, headers: headers ?? [:], sessionFactory: self.sessionFactory, networkActivityNotifier: self.networkActivityNotifier)
         request.config.updateRequest(credential: self.credential)
         return request
     }

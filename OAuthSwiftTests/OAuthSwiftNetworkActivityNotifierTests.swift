@@ -197,6 +197,7 @@ fileprivate class MockedSessionFactory: SessionFactory {
     
     let useDataTaskClosure: Bool = true
     let handler = MockedNetworkHandler()
+    var requestType: OAuthSwiftHTTPRequest.Type = OAuthSwiftHTTPRequest.self
     
     func build() -> OAuthSwiftNetworkRequestHandler {
         return handler
