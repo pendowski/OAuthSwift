@@ -56,7 +56,7 @@ open class OAuthSwiftHTTPRequest: NSObject, OAuthSwiftRequestHandle {
         self.init(config: Config(urlRequest: request, paramsLocation: paramsLocation, sessionFactory: sessionFactory), networkActivityNotifier: networkActivityNotifier)
     }
 
-    init(config: Config, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
+    public init(config: Config, networkActivityNotifier: OAuthSwiftNetworkActivityNotifierType?) {
         self.config = config
         self.networkActivityNotifier = networkActivityNotifier
     }
